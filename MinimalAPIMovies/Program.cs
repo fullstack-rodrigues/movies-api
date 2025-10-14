@@ -15,8 +15,14 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddOutputCache();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
+
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseCors("AllowAll");
 
 app.UseOutputCache();
