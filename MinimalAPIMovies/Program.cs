@@ -13,9 +13,13 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddOutputCache();
+
 var app = builder.Build();
 
 app.UseCors("AllowAll");
+
+app.UseOutputCache();
 
 app.MapGet("/", () => "Hello World!");
 
@@ -40,6 +44,6 @@ app.MapGet("/genres", () =>
         },
     };
     return genres;
-});
+}).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(15)));
 
 app.Run();
