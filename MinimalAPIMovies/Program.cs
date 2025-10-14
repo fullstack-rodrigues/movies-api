@@ -1,7 +1,9 @@
 using MinimalAPIMovies.Entities;
+using MinimalAPIMovies.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddScoped<IGenresRepository, GenresRepository>();
 
 builder.Services.AddCors(options =>
 {
@@ -51,5 +53,11 @@ app.MapGet("/genres", () =>
     };
     return genres;
 }).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(15)));
+
+app.MapPost("/genres", async (Genre genre, IGenresRepository genresRepository) =>
+{
+    await genresRepository.Create(genre);
+    return TypedResults.Ok();
+});
 
 app.Run();
