@@ -31,33 +31,22 @@ app.UseOutputCache();
 
 app.MapGet("/", () => "Hello World!");
 
-app.MapGet("/genres", () =>
+app.MapGet("/genres", async (IGenresRepository genresRepository) =>
 {
-    var  genres = new List<Genre>()
-    {
-        new Genre
-        {
-            Id = 1,
-            Name = "Drama"
-        },
-        new Genre
-        {
-            Id = 2,
-            Name = "Comedy"
-        },
-        new Genre
-        {
-            Id = 3,
-            Name = "Action"
-        },
-    };
-    return genres;
+    var genres = await genresRepository.GetAll();
+    return TypedResults.Ok(genres);
 }).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(15)));
+
+app.MapGet("/genres/{id:int}", async (IGenresRepository genresRepository, int id) =>
+{
+    var genre = await genresRepository.GetById(id);
+    return TypedResults.Ok(genre);
+});
 
 app.MapPost("/genres", async (Genre genre, IGenresRepository genresRepository) =>
 {
     await genresRepository.Create(genre);
-    return TypedResults.Ok();
+    return TypedResults.Created($"genres/{genre.Id}");
 });
 
 app.Run();
