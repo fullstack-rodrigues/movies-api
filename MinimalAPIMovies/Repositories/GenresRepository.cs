@@ -52,8 +52,9 @@ namespace MinimalAPIMovies.Repositories
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                var query = "select * from Genres order by name";
-                var genres = await connection.QueryAsync<Genre>(query);
+                //select * from Genres order by name 
+                var query = "GENRES_GETALL";
+                var genres = await connection.QueryAsync<Genre>(query, commandType: System.Data.CommandType.StoredProcedure);
                 return genres.ToList();
             }
         }
@@ -62,8 +63,9 @@ namespace MinimalAPIMovies.Repositories
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                var query = @"SELECT * FROM Genres where Id=@Id";
-                var genre = await connection.QueryFirstOrDefaultAsync<Genre>(query, new {id});
+                //SELECT * FROM Genres where Id=@Id
+                var query = "GENRES_GETBYID";
+                var genre = await connection.QueryFirstOrDefaultAsync<Genre>(query, new {id}, commandType: System.Data.CommandType.StoredProcedure);
                 return genre;
             }
         }
