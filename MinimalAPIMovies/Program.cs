@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.DependencyInjection;
 using MinimalAPIMovies.Endpoints;
 using MinimalAPIMovies.Entities;
 using MinimalAPIMovies.Repositories;
@@ -22,6 +23,7 @@ builder.Services.AddOutputCache();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 
