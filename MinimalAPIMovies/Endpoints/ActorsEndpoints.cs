@@ -1,19 +1,22 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using MinimalAPIMovies.DTOs;
 using MinimalAPIMovies.Entities;
 using MinimalAPIMovies.Repositories;
+using MinimalAPIMovies.Services;
 
 namespace MinimalAPIMovies.Endpoints
 {
     public static class ActorsEndpoints
     {
+        private readonly static string container = "actors";
         public static RouteGroupBuilder MapActors(this RouteGroupBuilder group)
         {
             group.MapGet("/", GetAll).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(120)).Tag("actors-get"));
             group.MapGet("/{id:int}", GetById);
-            group.MapPost("/", Create);
+            group.MapPost("/", Create).DisableAntiforgery();
             group.MapPut("/{id:int}", Update);
             group.MapDelete("/{id}", Delete);
             return group;
@@ -32,9 +35,15 @@ namespace MinimalAPIMovies.Endpoints
             return TypedResults.Ok(mapper.Map<ActorDTO>(actor));
         }
 
-        static async Task<Created<ActorDTO>> Create(CreateActorDTO actorDTO, IActorsRepository actorsRepository, IOutputCacheStore cacheStore, IMapper mapper)
+        static async Task<Created<ActorDTO>> Create([FromForm] CreateActorDTO actorDTO, 
+            IActorsRepository actorsRepository, IOutputCacheStore cacheStore,
+            IMapper mapper, IFileStorage fileStorage)
         {
             var actor = mapper.Map<Actor>(actorDTO);
+            if(actorDTO.Picture is not null)
+            {
+                var url = await fileStorage.Store(container, actorDTO.Picture);
+            }
             await cacheStore.EvictByTagAsync("actors-get", default);
             await actorsRepository.Create(actor);
             return TypedResults.Created($"actors/{actor.Id}", mapper.Map<ActorDTO>(actor));
