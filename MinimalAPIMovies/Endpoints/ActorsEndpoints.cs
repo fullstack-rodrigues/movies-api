@@ -1,0 +1,70 @@
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.OutputCaching;
+using MinimalAPIMovies.DTOs;
+using MinimalAPIMovies.Entities;
+using MinimalAPIMovies.Repositories;
+
+namespace MinimalAPIMovies.Endpoints
+{
+    public static class ActorsEndpoints
+    {
+        public static RouteGroupBuilder MapActors(this RouteGroupBuilder group)
+        {
+            group.MapGet("/", GetAll).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(120)).Tag("actors-get"));
+            group.MapGet("/{id:int}", GetById);
+            group.MapPost("/", Create);
+            group.MapPut("/{id:int}", Update);
+            group.MapDelete("/{id}", Delete);
+            return group;
+        }
+
+        static async Task<Ok<List<ActorDTO>>> GetAll(IActorsRepository actorsRepository, IMapper mapper)
+        {
+            var actors = await actorsRepository.GetAll();
+            var actorsDTO = mapper.Map<List<ActorDTO>>(actors);
+            return TypedResults.Ok(actorsDTO);
+        }
+
+        static async Task<Ok<ActorDTO>> GetById(IActorsRepository actorsRepository, int id, IMapper mapper)
+        {
+            var actor = await actorsRepository.GetById(id);
+            return TypedResults.Ok(mapper.Map<ActorDTO>(actor));
+        }
+
+        static async Task<Created<ActorDTO>> Create(CreateActorDTO actorDTO, IActorsRepository actorsRepository, IOutputCacheStore cacheStore, IMapper mapper)
+        {
+            var actor = mapper.Map<Actor>(actorDTO);
+            await cacheStore.EvictByTagAsync("actors-get", default);
+            await actorsRepository.Create(actor);
+            return TypedResults.Created($"actors/{actor.Id}", mapper.Map<ActorDTO>(actor));
+        }
+
+        static async Task<Results<NotFound, NoContent>> Update(CreateActorDTO actorDTO, IActorsRepository actorsRepository, IOutputCacheStore cacheStore, int id, IMapper mapper)
+        {
+            var actor = mapper.Map<Actor>(actorDTO);
+            actor.Id = id;
+            var exist = await actorsRepository.Exists(actor.Id);
+            if (!exist)
+            {
+                return TypedResults.NotFound();
+            }
+
+            await cacheStore.EvictByTagAsync("actors-get", default);
+            await actorsRepository.Update(actor);
+            return TypedResults.NoContent();
+        }
+
+        static async Task<Results<NotFound, NoContent>> Delete(int id, IActorsRepository actorsRepository, IOutputCacheStore cacheStore)
+        {
+            var exist = await actorsRepository.Exists(id);
+            if (!exist)
+            {
+                return TypedResults.NotFound();
+            }
+            await cacheStore.EvictByTagAsync("actors-get", default);
+            await actorsRepository.Delete(id);
+            return TypedResults.NoContent();
+        }
+    }
+}

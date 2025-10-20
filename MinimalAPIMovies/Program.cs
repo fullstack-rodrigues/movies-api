@@ -8,6 +8,7 @@ using MinimalAPIMovies.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IGenresRepository, GenresRepository>();
+builder.Services.AddScoped<IActorsRepository, ActorsRepository>();
 
 builder.Services.AddCors(options =>
 {
@@ -36,7 +37,8 @@ app.UseOutputCache();
 
 app.MapGet("/", () => "Hello World!");
 
-var genresEndpoints = app.MapGroup("/genres").MapGenres();
+app.MapGroup("/genres").MapGenres();
+app.MapGroup("/actors").MapActors();
 
 app.Run();
 
