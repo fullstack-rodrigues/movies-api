@@ -4,11 +4,13 @@ using Microsoft.Extensions.DependencyInjection;
 using MinimalAPIMovies.Endpoints;
 using MinimalAPIMovies.Entities;
 using MinimalAPIMovies.Repositories;
+using MinimalAPIMovies.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IGenresRepository, GenresRepository>();
 builder.Services.AddScoped<IActorsRepository, ActorsRepository>();
+builder.Services.AddTransient<IFileStorage, AzureFileStorage>();
 
 builder.Services.AddCors(options =>
 {

@@ -43,6 +43,7 @@ namespace MinimalAPIMovies.Endpoints
             if(actorDTO.Picture is not null)
             {
                 var url = await fileStorage.Store(container, actorDTO.Picture);
+                actor.Picture = url;
             }
             await cacheStore.EvictByTagAsync("actors-get", default);
             await actorsRepository.Create(actor);
