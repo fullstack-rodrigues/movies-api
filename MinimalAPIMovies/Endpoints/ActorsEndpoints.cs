@@ -22,9 +22,9 @@ namespace MinimalAPIMovies.Endpoints
             return group;
         }
 
-        static async Task<Ok<List<ActorDTO>>> GetAll(IActorsRepository actorsRepository, IMapper mapper)
+        static async Task<Ok<List<ActorDTO>>> GetAll(IActorsRepository actorsRepository, IMapper mapper, [FromQuery] string? name)
         {
-            var actors = await actorsRepository.GetAll();
+            var actors = await actorsRepository.GetAll(name);
             var actorsDTO = mapper.Map<List<ActorDTO>>(actors);
             return TypedResults.Ok(actorsDTO);
         }

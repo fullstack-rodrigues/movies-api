@@ -30,15 +30,20 @@ namespace MinimalAPIMovies.Repositories
             }
         }
 
-        public async Task<List<Actor>> GetAll()
+        public async Task<List<Actor>> GetAll(string? name)
         {
             using (var connection = new SqlConnection(connectionString))
             {
                 
                 var query = "select * from actors";
-                var actors = await connection.QueryAsync<Actor>(query);
+                if( name is not  null) {
+                    query += @" where name like @name";
+                 }
+                var parameters = new { name = $"%{name}%" };
+
+                var actors = await connection.QueryAsync<Actor>(query, parameters);
                 return actors.ToList();
-            }
+            }   
         }
 
         public async Task<Actor?> GetById(int id)
