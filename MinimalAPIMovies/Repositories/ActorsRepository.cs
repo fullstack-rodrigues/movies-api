@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
+using MinimalAPIMovies.DTOs;
 using MinimalAPIMovies.Entities;
 
 namespace MinimalAPIMovies.Repositories
@@ -7,10 +8,12 @@ namespace MinimalAPIMovies.Repositories
     public class ActorsRepository: IActorsRepository
     {
         private readonly string? connectionString;
+        private readonly HttpContext httpContext;
 
-        public ActorsRepository(IConfiguration configuration)
+        public ActorsRepository(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             connectionString = configuration.GetConnectionString("DefaultConnection");
+            httpContext = httpContextAccessor.HttpContext!;
         }
 
         public async Task<int> Create(Actor actor)
@@ -30,18 +33,25 @@ namespace MinimalAPIMovies.Repositories
             }
         }
 
-        public async Task<List<Actor>> GetAll(string? name)
+        public async Task<List<Actor>> GetAll(PaginationDTO pagination, string? name)
         {
             using (var connection = new SqlConnection(connectionString))
             {
                 
                 var query = "select * from actors";
+                var countQuery = "select count(*) from actors";
                 if( name is not  null) {
                     query += @" where name like @name";
-                 }
-                var parameters = new { name = $"%{name}%" };
+                    countQuery += @" where name like @name";
+                }
+                query += " ORDER BY Id OFFSET (@page - 1) * @itemsPerPage ROWS FETCH NEXT @itemsPerPage ROWS ONLY";
+                var parameters = new { name = $"%{name}%", page = pagination.Page, itemsPerPage = pagination.ItemsPerPage};
 
                 var actors = await connection.QueryAsync<Actor>(query, parameters);
+                var actorsCount = await connection.QuerySingleAsync<int>(countQuery, parameters);
+                var totalOfPages = Math.Ceiling((double)actorsCount / pagination.ItemsPerPage);
+                httpContext.Response.Headers.Append("totalOfRecords", actorsCount.ToString());
+                httpContext.Response.Headers.Append("totalOfPages", totalOfPages.ToString());
                 return actors.ToList();
             }   
         }

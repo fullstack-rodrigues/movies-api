@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IGenresRepository, GenresRepository>();
 builder.Services.AddScoped<IActorsRepository, ActorsRepository>();
 builder.Services.AddTransient<IFileStorage, AzureFileStorage>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddCors(options =>
 {
