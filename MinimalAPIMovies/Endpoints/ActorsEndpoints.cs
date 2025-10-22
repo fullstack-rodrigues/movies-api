@@ -17,7 +17,7 @@ namespace MinimalAPIMovies.Endpoints
             group.MapGet("/", GetAll).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(120)).Tag("actors-get"));
             group.MapGet("/{id:int}", GetById);
             group.MapPost("/", Create).DisableAntiforgery();
-            group.MapPut("/{id:int}", Update);
+            group.MapPut("/{id:int}", Update).DisableAntiforgery();
             group.MapDelete("/{id}", Delete);
             return group;
         }
@@ -51,14 +51,20 @@ namespace MinimalAPIMovies.Endpoints
             return TypedResults.Created($"actors/{actor.Id}", mapper.Map<ActorDTO>(actor));
         }
 
-        static async Task<Results<NotFound, NoContent>> Update(CreateActorDTO actorDTO, IActorsRepository actorsRepository, IOutputCacheStore cacheStore, int id, IMapper mapper)
+        static async Task<Results<NotFound, NoContent>> Update([FromForm] CreateActorDTO actorDTO, IActorsRepository actorsRepository, IOutputCacheStore cacheStore, int id, IMapper mapper, IFileStorage fileStorage)
         {
-            var actor = mapper.Map<Actor>(actorDTO);
-            actor.Id = id;
-            var exist = await actorsRepository.Exists(actor.Id);
-            if (!exist)
+            var actorDb = await actorsRepository.GetById(id);
+            if (actorDb is null)
             {
                 return TypedResults.NotFound();
+            }
+            var actor = mapper.Map<Actor>(actorDTO);
+            actor.Id = id;
+            actor.Picture = actorDb.Picture;
+            if(actorDTO.Picture is not null)
+            {
+                var url = await fileStorage.Edit(actor.Picture, container, actorDTO.Picture);
+                actor.Picture = url;
             }
 
             await cacheStore.EvictByTagAsync("actors-get", default);
@@ -66,7 +72,7 @@ namespace MinimalAPIMovies.Endpoints
             return TypedResults.NoContent();
         }
 
-        static async Task<Results<NotFound, NoContent>> Delete(int id, IActorsRepository actorsRepository, IOutputCacheStore cacheStore)
+        static async Task<Results<NotFound, NoContent>> Delete(int id, IFileStorage fileStorage, IActorsRepository actorsRepository, IOutputCacheStore cacheStore)
         {
             var exist = await actorsRepository.Exists(id);
             if (!exist)
