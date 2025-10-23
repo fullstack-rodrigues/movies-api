@@ -74,12 +74,13 @@ namespace MinimalAPIMovies.Endpoints
 
         static async Task<Results<NotFound, NoContent>> Delete(int id, IFileStorage fileStorage, IActorsRepository actorsRepository, IOutputCacheStore cacheStore)
         {
-            var exist = await actorsRepository.Exists(id);
-            if (!exist)
+            var exist = await actorsRepository.GetById(id);
+            if (exist is null)
             {
                 return TypedResults.NotFound();
             }
             await cacheStore.EvictByTagAsync("actors-get", default);
+            await fileStorage.Delete(exist.Picture, container);
             await actorsRepository.Delete(id);
             return TypedResults.NoContent();
         }
