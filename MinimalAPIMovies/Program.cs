@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IGenresRepository, GenresRepository>();
 builder.Services.AddScoped<IActorsRepository, ActorsRepository>();
+builder.Services.AddScoped<IMoviesRepository, MoviesRepository>();
 builder.Services.AddTransient<IFileStorage, AzureFileStorage>();
 builder.Services.AddHttpContextAccessor();
 
@@ -42,6 +43,7 @@ app.MapGet("/", () => "Hello World!");
 
 app.MapGroup("/genres").MapGenres();
 app.MapGroup("/actors").MapActors();
+app.MapGroup("/movies").MapMovies();
 
 app.Run();
 

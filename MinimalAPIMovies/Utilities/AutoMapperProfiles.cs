@@ -12,6 +12,8 @@ namespace MinimalAPIMovies.Utilities
             CreateMap<CreateGenreDTO, Genre>();
             CreateMap<CreateActorDTO, Actor>().ForMember(p => p.Picture, options => options.Ignore());
             CreateMap<Actor, ActorDTO>();
+            CreateMap<Movie, MovieDTO>();
+            CreateMap<CreateMovieDTO, Movie>();
         }
     }
 }

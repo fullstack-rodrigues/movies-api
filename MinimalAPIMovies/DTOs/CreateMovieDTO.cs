@@ -1,11 +1,10 @@
-﻿namespace MinimalAPIMovies.Entities
+﻿namespace MinimalAPIMovies.DTOs
 {
-    public class Movie
+    public class CreateMovieDTO
     {
-        public int Id { get; set; }
         public string Title { get; set; } = null!;
         public bool inTheaters { get; set; }
         public DateTime ReleaseDate { get; set; }
-        public string? Poster {  get; set; }
+        public IFormFile? Poster { get; set; }
     }
 }
