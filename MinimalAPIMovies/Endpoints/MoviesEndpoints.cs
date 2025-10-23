@@ -17,8 +17,8 @@ namespace MinimalAPIMovies.Endpoints
 
         public static RouteGroupBuilder MapMovies(this RouteGroupBuilder group)
         {
-            //group.MapGet("/", GetAll).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(120)).Tag("actors-get"));
-            //group.MapGet("/{id:int}", GetById);
+            group.MapGet("/", GetAll).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(120)).Tag("movies-get"));
+            group.MapGet("/{id:int}", GetById);
             group.MapPost("/", Create).DisableAntiforgery();
             //group.MapPut("/{id:int}", Update).DisableAntiforgery();
             //group.MapDelete("/{id}", Delete);
@@ -35,9 +35,24 @@ namespace MinimalAPIMovies.Endpoints
                 var url = await fileStorage.Store(container, movieDTO.Poster);
                 movie.Poster = url;
             }
-            await cacheStore.EvictByTagAsync("actors-get", default);
+            await cacheStore.EvictByTagAsync("movies-get", default);
             await moviesRepository.Create(movie);
-            return TypedResults.Created($"actors/{movie.Id}", mapper.Map<MovieDTO>(movie));
+            return TypedResults.Created($"movies/{movie.Id}", mapper.Map<MovieDTO>(movie));
         }
+
+        static async Task<Ok<List<MovieDTO>>> GetAll(IMoviesRepository moviesRepository, IMapper mapper, [FromQuery] string? title, int page = 1, int itemsPerPage = 10)
+        {
+            var pagination = new PaginationDTO { Page = page, ItemsPerPage = itemsPerPage };
+            var movies = await moviesRepository.GetAll(pagination, title);
+            var moviesDTO = mapper.Map<List<MovieDTO>>(movies);
+            return TypedResults.Ok(moviesDTO);
+        }
+        static async Task<Ok<MovieDTO>> GetById(IMoviesRepository moviesRepository, int id, IMapper mapper)
+        {
+            var movie = await moviesRepository.GetById(id);
+            return TypedResults.Ok(mapper.Map<MovieDTO>(movie));
+        }
+
+
     }
 }

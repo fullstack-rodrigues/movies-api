@@ -44,8 +44,8 @@ namespace MinimalAPIMovies.Repositories
                 var countQuery = "select count(*) from Movies";
                 if (title is not null)
                 {
-                    query += @" where Title like @name";
-                    countQuery += @" where Title like @name";
+                    query += @" where Title like @title";
+                    countQuery += @" where Title like @title";
                 }
                 query += " ORDER BY Id OFFSET (@page - 1) * @itemsPerPage ROWS FETCH NEXT @itemsPerPage ROWS ONLY";
                 var parameters = new { title = $"%{title}%", page = pagination.Page, itemsPerPage = pagination.ItemsPerPage };

@@ -13,7 +13,7 @@ namespace MinimalAPIMovies.Utilities
             CreateMap<CreateActorDTO, Actor>().ForMember(p => p.Picture, options => options.Ignore());
             CreateMap<Actor, ActorDTO>();
             CreateMap<Movie, MovieDTO>();
-            CreateMap<CreateMovieDTO, Movie>();
+            CreateMap<CreateMovieDTO, Movie>().ForMember(p => p.Poster, options => options.Ignore()); ;
         }
     }
 }
