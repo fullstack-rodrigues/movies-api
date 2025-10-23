@@ -103,7 +103,7 @@ namespace MinimalAPIMovies.Repositories
 
                 var query = @"update Movies set Title=@Title, InTheaters=@InTheaters,ReleaseDate=@ReleaseDate, Poster=@Poster  where id=@Id;";
 
-                await connection.ExecuteAsync(query, new { movie.Title, movie.inTheaters, movie.Poster, movie.Id });
+                await connection.ExecuteAsync(query, new { movie.Title, movie.inTheaters, movie.ReleaseDate, movie.Poster, movie.Id });
             }
         }
     }
