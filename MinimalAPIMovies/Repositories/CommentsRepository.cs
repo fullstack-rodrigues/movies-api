@@ -96,8 +96,8 @@ namespace MinimalAPIMovies.Repositories
             using (var connection = new SqlConnection(connectionString))
             {
 
-                var query = @"update Comments set Body=@Body, MovieId=@MovieId where id=@Id;";
-                await connection.ExecuteAsync(query, new { comment.Body, comment.MovieId, comment.Id });
+                var query = @"update Comments set Body=@Body where id=@Id;";
+                await connection.ExecuteAsync(query, new { comment.Body, comment.Id });
             }
         }
     }
