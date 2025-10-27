@@ -45,6 +45,7 @@ app.MapGet("/", () => "Hello World!");
 app.MapGroup("/genres").MapGenres();
 app.MapGroup("/actors").MapActors();
 app.MapGroup("/movies").MapMovies();
+app.MapGroup("/comments").MapComments();
 
 app.Run();
 

@@ -70,7 +70,7 @@ namespace MinimalAPIMovies.Repositories
                     countQuery += @" where body like @search";
                 }
                 query += " ORDER BY Id OFFSET (@page - 1) * @itemsPerPage ROWS FETCH NEXT @itemsPerPage ROWS ONLY";
-                var parameters = new { body = $"%{search}%", page = pagination.Page, itemsPerPage = pagination.ItemsPerPage };
+                var parameters = new { search = $"%{search}%", page = pagination.Page, itemsPerPage = pagination.ItemsPerPage };
 
                 var comments = await connection.QueryAsync<Comment>(query, parameters);
                 var commentsCount = await connection.QuerySingleAsync<int>(countQuery, parameters);
