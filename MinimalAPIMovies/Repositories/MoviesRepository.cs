@@ -65,9 +65,15 @@ namespace MinimalAPIMovies.Repositories
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                var query = @"SELECT * FROM Movies where Id=@Id";
-                var movie = await connection.QueryFirstOrDefaultAsync<Movie>(query, new { id });
+                var query = @"SELECT * FROM Movies where Id=@Id; SELECT * FROM Comments where movieID=@Id";
+                using (var multi = await connection.QueryMultipleAsync(query, new { id }))
+                {
+                var movie = await multi.ReadFirstAsync<Movie>();
+                var comments = await multi.ReadAsync<Comment>();
+                    movie.Comments = comments.ToList();
+
                 return movie;
+                }
             }
         }
 
