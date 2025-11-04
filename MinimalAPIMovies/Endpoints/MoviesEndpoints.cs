@@ -23,6 +23,7 @@ namespace MinimalAPIMovies.Endpoints
             group.MapPut("/{id:int}", Update).DisableAntiforgery();
             group.MapDelete("/{id}", Delete);
             group.MapPost("/{id:int}/assignGenres", AssignGenres);
+            group.MapPost("/{id:int}/assignActors", AssignActors);
             return group;
         }
 
@@ -115,6 +116,34 @@ namespace MinimalAPIMovies.Endpoints
 
         }
 
+        public static async Task<Results<NotFound, NoContent, BadRequest<string>>> AssignActors(
+            int id, List<AssignActorMovieDTO> actorsDTO, IMoviesRepository moviesRepository, 
+            IActorsRepository actorsRepository, IMapper mapper)
+        {
+            if(!await moviesRepository.Exists(id))
+            {
+                return TypedResults.NotFound();
+            }
+
+            var existingActors = new List<int>();
+            var actorsIds = actorsDTO.Select(a => a.ActorId).ToList();
+
+            if (actorsDTO.Count != 0)
+            {
+                existingActors = await actorsRepository.Exists(actorsIds);
+            }
+
+            if(existingActors.Count != actorsDTO.Count)
+            {
+                var nonExistingActors = actorsIds.Except(existingActors);
+                var nonExistingActorsCSV = string.Join(", ", nonExistingActors);
+                return TypedResults.BadRequest($"the actors of id {nonExistingActors} does not exists");
+            }
+            var actors = mapper.Map<List<ActorMovie>>(actorsDTO);
+            await moviesRepository.Assign(id, actors);
+            return TypedResults.NoContent();
+
+        }
 
     }
 }

@@ -137,7 +137,7 @@ namespace MinimalAPIMovies.Repositories
 
         public async Task Assign(int id, List<ActorMovie> actors)
         {
-            for (int i = 0; i <= actors.Count; i++)
+            for (int i = 1; i <= actors.Count; i++)
             {
                 actors[i - 1].Order = i;
             }
