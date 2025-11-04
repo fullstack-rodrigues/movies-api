@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using MinimalAPIMovies.Entities;
 
@@ -67,6 +68,26 @@ namespace MinimalAPIMovies.Repositories
                 var query = "GENRES_GETBYID";
                 var genre = await connection.QueryFirstOrDefaultAsync<Genre>(query, new {id}, commandType: System.Data.CommandType.StoredProcedure);
                 return genre;
+            }
+        }
+
+        public async Task<List<int>> Exists(List<int> ids)
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id", typeof(int));
+            foreach (var item in ids)
+            {
+                dt.Rows.Add(item);
+            }
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var genresCreated = await connection.QueryAsync<int>("Genres_GetBySeveralIds", new
+                {
+                    genresIds = dt
+                });
+                return genresCreated.ToList();
+                
             }
         }
 

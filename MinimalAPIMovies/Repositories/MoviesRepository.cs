@@ -1,11 +1,13 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.SqlClient;
 using MinimalAPIMovies.DTOs;
 using MinimalAPIMovies.Entities;
 
 namespace MinimalAPIMovies.Repositories
 {
-    public class MoviesRepository: IMoviesRepository
+    public class MoviesRepository : IMoviesRepository
     {
         private readonly string? connectionString;
         private readonly HttpContext httpContext;
@@ -68,11 +70,11 @@ namespace MinimalAPIMovies.Repositories
                 var query = @"SELECT * FROM Movies where Id=@Id; SELECT * FROM Comments where movieID=@Id";
                 using (var multi = await connection.QueryMultipleAsync(query, new { id }))
                 {
-                var movie = await multi.ReadFirstAsync<Movie>();
-                var comments = await multi.ReadAsync<Comment>();
+                    var movie = await multi.ReadFirstAsync<Movie>();
+                    var comments = await multi.ReadAsync<Comment>();
                     movie.Comments = comments.ToList();
 
-                return movie;
+                    return movie;
                 }
             }
         }
@@ -112,5 +114,28 @@ namespace MinimalAPIMovies.Repositories
                 await connection.ExecuteAsync(query, new { movie.Title, movie.inTheaters, movie.ReleaseDate, movie.Poster, movie.Id });
             }
         }
+
+
+        public async Task Assign(int id, List<int> genresIds)
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id", typeof(int));
+            foreach (var item in genresIds)
+            {
+                dt.Rows.Add(item);
+            }
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                await connection.ExecuteAsync("Movies_AssignGenres", new
+                {
+                    movieId = id,
+                    genresIds = dt
+                }, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+      
+
     }
 }
