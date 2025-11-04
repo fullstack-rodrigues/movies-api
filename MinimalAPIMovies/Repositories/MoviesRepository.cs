@@ -135,7 +135,32 @@ namespace MinimalAPIMovies.Repositories
             }
         }
 
-      
+        public async Task Assign(int id, List<ActorMovie> actors)
+        {
+            for (int i = 0; i <= actors.Count; i++)
+            {
+                actors[i - 1].Order = i;
+            }
+
+            var dt = new DataTable();
+
+            dt.Columns.Add("ActorId", typeof(int));
+            dt.Columns.Add("Character", typeof(string));
+            dt.Columns.Add("Order", typeof(int));
+
+            foreach (var actorMovie in actors)
+            {
+                dt.Rows.Add(actorMovie.ActorId, actorMovie.Character, actorMovie.Order);
+            }
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                await connection.ExecuteAsync("Movies_AssignActors", new
+                {
+                    movieId = id, actors = dt
+                });
+            }
+        }
 
     }
 }

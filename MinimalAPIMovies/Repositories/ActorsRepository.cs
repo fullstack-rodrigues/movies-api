@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using MinimalAPIMovies.DTOs;
 using MinimalAPIMovies.Entities;
@@ -99,6 +100,28 @@ namespace MinimalAPIMovies.Repositories
                 var query = @"update Actors set Name=@Name, Picture=@Picture,DateOfBirth=@DateOfBirth  where id=@Id;";
                 await connection.ExecuteAsync(query, new { actor.Name, actor.DateOfBirth, actor.Picture, actor.Id });
             }
+        }
+
+
+        public async Task<List<int>> Exists(List<int> ids)
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id", typeof(int));
+
+            foreach (var id in ids)
+            {
+                dt.Rows.Add(id);
+            }
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var idOfExistingActors = await connection.QueryAsync<int>("Actors_GetBySeveralIds", new
+                {
+                    actorsIds = dt
+                }, commandType: CommandType.StoredProcedure);
+                return idOfExistingActors.ToList();
+            }
+
         }
 
     }

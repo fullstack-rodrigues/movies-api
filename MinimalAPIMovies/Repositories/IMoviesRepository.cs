@@ -13,5 +13,6 @@ namespace MinimalAPIMovies.Repositories
         Task Delete(int id);
 
         Task Assign(int id, List<int> genresIds);
+        Task Assign(int id, List<ActorMovie> actors);
     }
 }
