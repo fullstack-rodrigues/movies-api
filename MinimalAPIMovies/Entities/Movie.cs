@@ -9,5 +9,8 @@
         public string? Poster {  get; set; }
 
         public List<Comment> Comments { get; set; } = new List<Comment>();
+
+        public List<ActorMovie> Cast { get; set; } = new List<ActorMovie>();
+        public List<GenreMovie> Genres { get; set; } = new List<GenreMovie>();
     }
 }

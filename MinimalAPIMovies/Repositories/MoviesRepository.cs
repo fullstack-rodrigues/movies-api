@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Data.SqlClient;
 using MinimalAPIMovies.DTOs;
 using MinimalAPIMovies.Entities;
@@ -67,13 +68,32 @@ namespace MinimalAPIMovies.Repositories
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                var query = @"SELECT * FROM Movies where Id=@Id; SELECT * FROM Comments where movieID=@Id";
-                using (var multi = await connection.QueryMultipleAsync(query, new { id }))
+                using (var multi = await connection.QueryMultipleAsync("Movies_GetById", new { id }))
                 {
                     var movie = await multi.ReadFirstAsync<Movie>();
                     var comments = await multi.ReadAsync<Comment>();
+                    var genres = await multi.ReadAsync<Genre>();
+                    var cast = await multi.ReadAsync<ActorMovieDTO>();
                     movie.Comments = comments.ToList();
 
+                    foreach (var genre in genres)
+                    {
+                        movie.Genres.Add(new GenreMovie
+                        {
+                            GenreId = genre.Id,
+                            Genre = genre
+                        }); 
+                    }
+
+                    foreach (var actor in cast)
+                    {
+                        movie.Cast.Add(new ActorMovie
+                        {
+                            ActorId = actor.Id,
+                            Character = actor.Character,
+                            Actor = new Actor { Name = actor.Name },
+                        });
+                    }
                     return movie;
                 }
             }
