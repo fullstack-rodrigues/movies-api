@@ -100,5 +100,15 @@ namespace MinimalAPIMovies.Repositories
                 await connection.ExecuteAsync(query, genre);
             }
         }
+
+        public async Task <bool>Exists(int id, string name)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var exists = await connection.QuerySingleAsync<bool>("GetGenres_ByName_Id", new {id, name},
+                    commandType: CommandType.StoredProcedure);
+                return exists;
+            }
+        }
     }
 }
