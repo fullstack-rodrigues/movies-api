@@ -5,6 +5,7 @@ using MinimalAPIMovies.Endpoints;
 using MinimalAPIMovies.Entities;
 using MinimalAPIMovies.Repositories;
 using MinimalAPIMovies.Services;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,8 @@ builder.Services.AddOutputCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program));
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var app = builder.Build();
 
