@@ -34,12 +34,17 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("AllowAll");
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 app.UseOutputCache();
 
