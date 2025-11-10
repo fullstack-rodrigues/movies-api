@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using MinimalAPIMovies.DTOs;
 using MinimalAPIMovies.Entities;
+using MinimalAPIMovies.Filters;
 using MinimalAPIMovies.Repositories;
 
 namespace MinimalAPIMovies.Endpoints
@@ -15,8 +16,8 @@ namespace MinimalAPIMovies.Endpoints
         {
             group.MapGet("/", GetAll).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(120)).Tag("genres-get"));
             group.MapGet("/{id:int}", GetById);
-            group.MapPost("/", Create);
-            group.MapPut("/{id:int}", Update);
+            group.MapPost("/", Create).AddEndpointFilter<GeneralFilters<CreateGenreDTO>>();
+            group.MapPut("/{id:int}", Update).AddEndpointFilter<GeneralFilters<CreateGenreDTO>>(); ;
             group.MapDelete("/{id}", Delete);
             return group;
         }
@@ -48,7 +49,9 @@ namespace MinimalAPIMovies.Endpoints
             return TypedResults.Created($"genres/{genre.Id}", mapper.Map<GenreDTO>(genre));
         }
 
-        static async Task<Results<NotFound, NoContent>> Update(CreateGenreDTO genreDTO, IGenresRepository genresRepository, IOutputCacheStore cacheStore, int id, IMapper mapper)
+        static async Task<Results<NotFound, NoContent>> Update(CreateGenreDTO genreDTO, 
+            IGenresRepository genresRepository, IOutputCacheStore cacheStore, 
+            int id, IMapper mapper)
         {
             var genre = mapper.Map<Genre>(genreDTO);
             genre.Id = id;

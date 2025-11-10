@@ -6,15 +6,21 @@ namespace MinimalAPIMovies.Validation
 {
     public class CreateGenreDTOValidator: AbstractValidator<CreateGenreDTO>
     {
-        public CreateGenreDTOValidator(IGenresRepository genresRepository)
+        public CreateGenreDTOValidator(IGenresRepository genresRepository, IHttpContextAccessor httpContextAccessor)
         {
+            var routeId = httpContextAccessor.HttpContext!.Request.RouteValues["id"];
+            var id = 0;
+            if (routeId is string routeIdString)
+            {
+                int.TryParse(routeIdString, out id);
+            }
             RuleFor(p => p.Name)
-                .NotEmpty().WithMessage("The field {PropertyName} is required")
+                .NotEmpty().WithMessage(ValidationUtilities.NonEmptyMessage)
                 .MaximumLength(150)
-                .Must(isFirstLetterUpperCase).WithMessage("The field {PropertyName} should start uppercase")
+                .Must(isFirstLetterUpperCase).WithMessage(ValidationUtilities.FirstLetterUpperCase)
                 .MustAsync(async(name, _) =>
                 {
-                    var exists = await genresRepository.Exists(id: 0, name);
+                    var exists = await genresRepository.Exists(id, name);
                     return !exists;
                 }).WithMessage(g => $"a genre with the name {g.Name} already exists");
         }
